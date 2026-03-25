@@ -690,13 +690,22 @@
 
         const initApp = (role) => {
           currentRole = role;
-          prizes =
-            allData && allData[role]
-              ? allData[role].prizes
-              : [
-                  { name: "Sample 1", percentage: 50 },
-                  { name: "Sample 2", percentage: 50 },
-                ];
+          
+          // Try to load from localStorage first
+          const savedPrizes = localStorage.getItem(`prizes_${role}`);
+          
+          if (savedPrizes) {
+            prizes = JSON.parse(savedPrizes);
+          } else {
+            prizes =
+              allData && allData[role]
+                ? allData[role].prizes
+                : [
+                    { name: "Sample 1", percentage: 50 },
+                    { name: "Sample 2", percentage: 50 },
+                  ];
+          }
+
           colors =
             allData && allData.colors ? allData.colors : ["#9A0C26", "#FAFAFA"];
           logos = allData && allData.logo ? allData.logo : [];
@@ -723,6 +732,12 @@
             updatePrizeList();
             resetIdleTimer();
           }, 100);
+        };
+
+        const savePrizesToLocal = () => {
+          if (currentRole) {
+            localStorage.setItem(`prizes_${currentRole}`, JSON.stringify(prizes));
+          }
         };
 
         const backToSelection = () => {
@@ -873,6 +888,12 @@
 
               document.getElementById("prize-result").textContent = winner.name;
               const m = document.getElementById("prize-modal");
+              
+              // Play congratulation sound
+              const winSound = new Audio("https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1539c.mp3");
+              winSound.volume = 0.5;
+              winSound.play().catch(e => console.log("Sound play blocked or failed:", e));
+
               m.classList.remove("hidden");
               setTimeout(
                 () =>
@@ -912,12 +933,14 @@
           if (!isNaN(newPerc) && newPerc >= 0) {
             prizes[i].percentage = newPerc;
             drawWheel();
+            savePrizesToLocal();
           }
         };
 
         window.removePrize = (i) => {
           prizes.splice(i, 1);
           updatePrizeList();
+          savePrizesToLocal();
         };
 
         const updateLogoList = () => {
@@ -1037,6 +1060,7 @@
           if (n && p) {
             prizes.push({ name: n, percentage: p });
             updatePrizeList();
+            savePrizesToLocal();
           }
         };
         document.getElementById("add-logo-btn").onclick = () => {
