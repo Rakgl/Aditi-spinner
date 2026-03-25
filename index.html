@@ -262,11 +262,15 @@
       }
       .wheel-full {
         width: 100% !important;
+        flex: 1 1 100% !important;
       }
       .ad-hidden {
         width: 0 !important;
         opacity: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
         pointer-events: none;
+        overflow: hidden;
       }
     </style>
   </head>
@@ -690,10 +694,10 @@
 
         const initApp = (role) => {
           currentRole = role;
-          
+
           // Try to load from localStorage first
           const savedPrizes = localStorage.getItem(`prizes_${role}`);
-          
+
           if (savedPrizes) {
             prizes = JSON.parse(savedPrizes);
           } else {
@@ -736,7 +740,10 @@
 
         const savePrizesToLocal = () => {
           if (currentRole) {
-            localStorage.setItem(`prizes_${currentRole}`, JSON.stringify(prizes));
+            localStorage.setItem(
+              `prizes_${currentRole}`,
+              JSON.stringify(prizes),
+            );
           }
         };
 
@@ -754,6 +761,17 @@
           if (!isSpinning) idleTimer = setTimeout(backToSelection, idleLimit);
         };
 
+        const adjustColor = (hex, amt) => {
+          let col = hex.startsWith("#") ? hex.slice(1) : hex;
+          let r = parseInt(col.substring(0, 2), 16) + amt;
+          let g = parseInt(col.substring(2, 4), 16) + amt;
+          let b = parseInt(col.substring(4, 6), 16) + amt;
+          r = Math.max(0, Math.min(255, r));
+          g = Math.max(0, Math.min(255, g));
+          b = Math.max(0, Math.min(255, b));
+          return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+        };
+
         const getContrastColor = (hex) => {
           if (hex.startsWith("#")) hex = hex.slice(1);
           const r = parseInt(hex.substr(0, 2), 16),
@@ -767,9 +785,23 @@
         const drawWheel = () => {
           if (prizes.length === 0) return;
           const radius = canvas.width / 2;
+          const centerX = radius;
+          const centerY = radius;
+          
           ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          // Outer Glow (Background)
           ctx.save();
-          ctx.translate(radius, radius);
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius - 15, 0, Math.PI * 2);
+          ctx.shadowBlur = 40;
+          ctx.shadowColor = "rgba(239, 68, 68, 0.3)";
+          ctx.fillStyle = "#ffffff";
+          ctx.fill();
+          ctx.restore();
+
+          ctx.save();
+          ctx.translate(centerX, centerY);
           ctx.rotate(spinAngle);
           let curAngle = 0;
 
@@ -777,25 +809,107 @@
 
           prizes.forEach((p, i) => {
             const arc = (p.percentage / totalWeight) * (Math.PI * 2);
+            
+            // Slice Gradient for depth
+            const baseColor = colors[i % colors.length];
+            const gradient = ctx.createRadialGradient(0, 0, radius * 0.1, 0, 0, radius);
+            gradient.addColorStop(0, baseColor);
+            gradient.addColorStop(0.8, baseColor);
+            gradient.addColorStop(1, adjustColor(baseColor, -30)); // Darker edge
+            
             ctx.beginPath();
-            ctx.fillStyle = colors[i % colors.length];
+            ctx.fillStyle = gradient;
             ctx.moveTo(0, 0);
-            ctx.arc(0, 0, radius - 5, curAngle, curAngle + arc);
+            ctx.arc(0, 0, radius - 20, curAngle, curAngle + arc);
             ctx.closePath();
             ctx.fill();
 
+            // Border between slices
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+            ctx.stroke();
+
             ctx.save();
             ctx.rotate(curAngle + arc / 2);
-            ctx.fillStyle = getContrastColor(colors[i % colors.length]);
-            ctx.font = "bold 16px Poppins";
+            ctx.fillStyle = getContrastColor(baseColor);
+            ctx.font = "bold 18px Poppins";
             ctx.textAlign = "right";
             ctx.textBaseline = "middle";
-            const padding = 20;
+            ctx.shadowBlur = 2;
+            ctx.shadowColor = "rgba(0,0,0,0.3)";
+            
+            const padding = 50;
             ctx.fillText(p.name, radius - padding, 0);
             ctx.restore();
             curAngle += arc;
           });
+          ctx.restore();
 
+          // Static Elements (Outer Rim & Bezel)
+          ctx.save();
+          ctx.translate(centerX, centerY);
+          
+          // 1. Outer Dark Bezel (gives it a 3D frame)
+          ctx.beginPath();
+          ctx.arc(0, 0, radius - 2, 0, Math.PI * 2);
+          ctx.lineWidth = 8;
+          ctx.strokeStyle = "#1e293b"; // Slate-800
+          ctx.stroke();
+
+          // 2. Main Metallic Rim
+          const rimGradient = ctx.createLinearGradient(-radius, -radius, radius, radius);
+          rimGradient.addColorStop(0, "#ffffff");
+          rimGradient.addColorStop(0.4, "#e2e8f0"); // Slate-200
+          rimGradient.addColorStop(0.5, "#ffffff");
+          rimGradient.addColorStop(0.6, "#e2e8f0");
+          rimGradient.addColorStop(1, "#cbd5e1"); // Slate-300
+
+          ctx.beginPath();
+          ctx.arc(0, 0, radius - 12, 0, Math.PI * 2);
+          ctx.lineWidth = 24;
+          ctx.strokeStyle = rimGradient;
+          ctx.stroke();
+          
+          // 3. Inner Stroke for depth
+          ctx.beginPath();
+          ctx.arc(0, 0, radius - 24, 0, Math.PI * 2);
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = "rgba(0,0,0,0.2)";
+          ctx.stroke();
+          
+          // 4. Decorative "Bulb" Lights
+          const lightCount = 30; // More lights for a denser look
+          for (let i = 0; i < lightCount; i++) {
+            const angle = (i * (Math.PI * 2)) / lightCount;
+            const dotX = (radius - 12) * Math.cos(angle);
+            const dotY = (radius - 12) * Math.sin(angle);
+            
+            const isOn = (i + Math.floor(spinAngle * 5)) % 3 === 0;
+            
+            // Bulb Glow
+            if (isOn) {
+                ctx.beginPath();
+                ctx.arc(dotX, dotY, 8, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(255, 215, 0, 0.3)";
+                ctx.fill();
+            }
+
+            // Bulb Body
+            ctx.beginPath();
+            ctx.arc(dotX, dotY, 5, 0, Math.PI * 2);
+            ctx.fillStyle = isOn ? "#FFD700" : "#94a3b8";
+            ctx.shadowBlur = isOn ? 10 : 0;
+            ctx.shadowColor = "#FFD700";
+            ctx.fill();
+            
+            // Tiny highlight on bulb
+            if (isOn) {
+                ctx.beginPath();
+                ctx.arc(dotX - 1.5, dotY - 1.5, 1.5, 0, Math.PI * 2);
+                ctx.fillStyle = "#ffffff";
+                ctx.fill();
+            }
+          }
           ctx.restore();
         };
 
@@ -814,6 +928,9 @@
 
           document.querySelector(".right-container").classList.add("ad-hidden");
           document.querySelector(".left-container").classList.add("wheel-full");
+          // Remove gap for perfect centering
+          document.querySelector(".md\\:flex-row").classList.remove("gap-8");
+          document.querySelector(".md\\:flex-row").classList.add("gap-0");
 
           // 1. Pick winner first based on weighted logic
           const totalWeight = prizes.reduce((s, p) => s + p.percentage, 0);
@@ -888,11 +1005,15 @@
 
               document.getElementById("prize-result").textContent = winner.name;
               const m = document.getElementById("prize-modal");
-              
+
               // Play congratulation sound
-              const winSound = new Audio("https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1539c.mp3");
+              const winSound = new Audio(
+                "https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1539c.mp3",
+              );
               winSound.volume = 0.5;
-              winSound.play().catch(e => console.log("Sound play blocked or failed:", e));
+              winSound
+                .play()
+                .catch((e) => console.log("Sound play blocked or failed:", e));
 
               m.classList.remove("hidden");
               setTimeout(
@@ -1104,6 +1225,9 @@
           document
             .querySelector(".left-container")
             .classList.remove("wheel-full");
+          // Restore gap
+          document.querySelector(".md\\:flex-row").classList.remove("gap-0");
+          document.querySelector(".md\\:flex-row").classList.add("gap-8");
         };
 
         document.getElementById("idle-timeout-input").onchange = (e) =>
