@@ -22,13 +22,13 @@
   "student": {
     "prizes": [
       { "name": "🎓 Scholarship 20%", "image": "", "percentage": 12 },
-      { "name": "🎓 Scholarship 30%", "image": "", "percentage": 10 },
-      { "name": "🎓 Scholarship 50%", "image": "", "percentage": 6 },
-      { "name": "👑 Scholarship 100%", "image": "", "percentage": 1 },
       { "name": "🛍️ ADITI Tote Bag", "image": "", "percentage": 10 },
       { "name": "✨ Stickers", "image": "", "percentage": 30 },
+      { "name": "🎓 Scholarship 30%", "image": "", "percentage": 10 },
       { "name": "🌟 You are amazing!", "image": "", "percentage": 12 },
+      { "name": "👑 Scholarship 100%", "image": "", "percentage": 1 },
       { "name": "🍼 ADITI Bottle", "image": "", "percentage": 8 },
+      { "name": "🎓 Scholarship 50%", "image": "", "percentage": 6 },
       { "name": "🙏 Thank you for visiting", "image": "", "percentage": 10 }
     ],
     "ads": [
