@@ -1,0 +1,1104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ADITI Academy - Prize Wheel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet" />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+        background-color: #020617;
+        background-position: center;
+        background-size: cover;
+        transition: background-image 0.5s ease-in-out;
+      }
+
+      /* --- SELECTION OVERLAY --- */
+      #role-selection-overlay {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(12px);
+        z-index: 100;
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      /* --- ANIMATED UIVERSE BUTTON --- */
+
+      .button {
+        --round: 0.75rem;
+        cursor: pointer;
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        transition: all 0.25s ease;
+        background:
+          radial-gradient(
+            65.28% 65.28% at 50% 100%,
+            rgba(239, 68, 68, 0.8) 0%,
+            rgba(239, 68, 68, 0) 100%
+          ),
+          linear-gradient(0deg, #b91c1c, #ef4444);
+        border-radius: var(--round);
+        border: none;
+        outline: none;
+        padding: 12px 24px;
+        min-width: 190px;
+      }
+      .button::before,
+      .button::after {
+        content: "";
+        position: absolute;
+        inset: var(--space);
+        transition: all 0.5s ease-in-out;
+        border-radius: calc(var(--round) - var(--space));
+        z-index: 0;
+      }
+      .button::before {
+        --space: 1px;
+        background: linear-gradient(
+          177.95deg,
+          rgba(255, 255, 255, 0.19) 0%,
+          rgba(255, 255, 255, 0) 100%
+        );
+      }
+      .button::after {
+        --space: 2px;
+        background:
+          radial-gradient(
+            65.28% 65.28% at 50% 100%,
+            rgba(239, 68, 68, 0.8) 0%,
+            rgba(239, 68, 68, 0) 100%
+          ),
+          linear-gradient(0deg, #b91c1c, #ef4444);
+      }
+      .button:active {
+        transform: scale(0.95);
+      }
+      .fold {
+        z-index: 1;
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 1rem;
+        width: 1rem;
+        display: inline-block;
+        transition: all 0.5s ease-in-out;
+        background: radial-gradient(
+          100% 75% at 55%,
+          rgba(239, 68, 68, 0.8) 0%,
+          rgba(239, 68, 68, 0) 100%
+        );
+        box-shadow: 0 0 3px black;
+        border-bottom-left-radius: 0.5rem;
+        border-top-right-radius: var(--round);
+      }
+      .fold::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 150%;
+        height: 150%;
+        transform: rotate(45deg) translateX(0%) translateY(-18px);
+        background-color: #e8e8e8;
+        pointer-events: none;
+      }
+      .button:hover .fold {
+        margin-top: -1rem;
+        margin-right: -1rem;
+      }
+      .points_wrapper {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        position: absolute;
+        z-index: 1;
+      }
+      .points_wrapper .point {
+        bottom: -10px;
+        position: absolute;
+        animation: floating-points infinite ease-in-out;
+        pointer-events: none;
+        width: 2px;
+        height: 2px;
+        background-color: #fff;
+        border-radius: 9999px;
+      }
+      @keyframes floating-points {
+        0% {
+          transform: translateY(0);
+        }
+        85% {
+          opacity: 0;
+        }
+        100% {
+          transform: translateY(-55px);
+          opacity: 0;
+        }
+      }
+      .inner {
+        z-index: 2;
+        gap: 6px;
+        position: relative;
+        width: 100%;
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 500;
+      }
+      .inner svg.icon {
+        width: 18px;
+        height: 18px;
+        transition: fill 0.1s linear;
+      }
+      .button:hover svg.icon {
+        fill: transparent;
+        animation:
+          dasharray 1s linear forwards,
+          filled 0.1s linear forwards 0.95s;
+      }
+      @keyframes dasharray {
+        from {
+          stroke-dasharray: 0 0 0 0;
+        }
+        to {
+          stroke-dasharray: 68 68 0 0;
+        }
+      }
+      @keyframes filled {
+        to {
+          fill: white;
+        }
+      }
+
+      /* --- EXACT WHEEL/AD STYLES FROM YOUR CODE --- */
+      .animate-pulse-zoom {
+        animation: pulse-zoom 2s infinite;
+      }
+      @keyframes pulse-zoom {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+      }
+      .wheel-container {
+        position: relative;
+        width: 650px;
+        height: 650px;
+      }
+      @media (max-width: 768px) {
+        .wheel-container {
+          width: 650px;
+          height: 650px;
+        }
+      }
+      .pointer {
+        width: 0;
+        height: 0;
+        border-top: 15px solid transparent;
+        border-bottom: 15px solid transparent;
+        border-left: 25px solid #b41f3a; /* Points right, gets flipped to point left */
+      }
+      #ad-image-container {
+        position: relative;
+        width: 100%;
+        padding-top: 100%; /* 1:1 Aspect Ratio */
+      }
+      #ad-image-container img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 0.75rem;
+        transition: opacity 0.5s ease-in-out;
+      }
+      .carousel-dots {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 10px;
+      }
+      .carousel-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.4);
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+      .carousel-dot.active {
+        background: #fff;
+      }
+      .transition-layout {
+        transition:
+          width 0.6s ease,
+          opacity 0.6s ease;
+      }
+      .wheel-full {
+        width: 100% !important;
+      }
+      .ad-hidden {
+        width: 0 !important;
+        opacity: 0 !important;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Role Selection Overlay -->
+    <div
+      id="role-selection-overlay"
+      class="fixed inset-0 flex flex-col items-center justify-center p-6 text-white transition-opacity duration-500">
+      <div class="text-center mb-10">
+        <div class="flex items-center justify-center gap-4 mb-6">
+          <img
+            src="http://asset.aditi.com.kh/images/logo/6350fb1789751.png"
+            class="h-16"
+            alt="ADITI Logo" />
+          <img
+            src="https://i.ibb.co/4nY5QTff/ADITI-Academy-2.png"
+            class="h-16"
+            alt="ADITI Academy Logo" />
+        </div>
+        <h1 class="text-6xl font-black mb-2 tracking-tighter uppercase">
+          SPIN & WIN
+        </h1>
+        <p class="text-gray-300 font-light italic">
+          "Choose your category to start the journey"
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl z-10">
+        <div
+          class="glass-card p-10 rounded-[2.5rem] text-center flex flex-col items-center">
+          <div class="text-6xl mb-4">🎓</div>
+          <h2 class="text-2xl font-bold mb-3">Students</h2>
+          <p class="text-gray-400 text-sm mb-8 leading-relaxed max-w-[250px]">
+            Explore technology careers and learning opportunities.
+          </p>
+          <button type="button" id="select-student" class="button">
+            <span class="fold"></span>
+            <div class="points_wrapper">
+              <i class="point"></i><i class="point"></i><i class="point"></i
+              ><i class="point"></i><i class="point"></i><i class="point"></i
+              ><i class="point"></i><i class="point"></i><i class="point"></i
+              ><i class="point"></i>
+            </div>
+            <span class="inner"
+              ><svg
+                class="icon"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+                <polyline
+                  points="13.18 1.37 13.18 9.64 21.45 9.64 10.82 22.63 10.82 14.36 2.55 14.36 13.18 1.37"></polyline></svg
+              >Start Spinning</span
+            >
+          </button>
+        </div>
+        <div
+          class="glass-card p-10 rounded-[2.5rem] text-center flex flex-col items-center">
+          <div class="text-6xl mb-4">🏢</div>
+          <h2 class="text-2xl font-bold mb-3">SME / Business</h2>
+          <p class="text-gray-400 text-sm mb-8 leading-relaxed max-w-[250px]">
+            Introduce how technology can support your growth.
+          </p>
+          <button type="button" id="select-enterprise" class="button">
+            <span class="fold"></span>
+            <div class="points_wrapper">
+              <i class="point"></i><i class="point"></i><i class="point"></i
+              ><i class="point"></i><i class="point"></i><i class="point"></i
+              ><i class="point"></i><i class="point"></i><i class="point"></i
+              ><i class="point"></i>
+            </div>
+            <span class="inner"
+              ><svg
+                class="icon"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24">
+                <polyline
+                  points="13.18 1.37 13.18 9.64 21.45 9.64 10.82 22.63 10.82 14.36 2.55 14.36 13.18 1.37"></polyline></svg
+              >Start Spinning</span
+            >
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main App Container (WITH YOUR EXACT STRUCTURE/CLASSES) -->
+    <div
+      id="app-container"
+      class="relative flex flex-col items-center min-h-screen justify-center px-4 overflow-hidden hidden">
+      <!-- Top Absolute Header -->
+      <div
+        id="open-settings-btn"
+        class="absolute top-4 left-4 z-30 cursor-pointer flex items-center gap-3 hover:scale-105 transition-transform duration-300">
+        <img
+          src="http://asset.aditi.com.kh/images/logo/6350fb1789751.png"
+          class="h-16"
+          alt="ADITI Logo" />
+        <img
+          src="https://i.ibb.co/4nY5QTff/ADITI-Academy-2.png"
+          class="h-16"
+          alt="ADITI Academy Logo" />
+      </div>
+      <button
+        id="back-to-selection"
+        class="absolute top-4 right-4 z-30 flex items-center gap-2 bg-white/90 backdrop-blur-md px-5 py-2.5 rounded-full shadow-lg font-bold text-gray-800 hover:bg-red-600 hover:text-white transition-all transform hover:-translate-x-1 border border-gray-100">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg
+        >BACK
+      </button>
+
+      <!-- Wheel + Ad layout -->
+      <div
+        class="flex flex-col md:flex-row items-center min-h-screen justify-center gap-8 m-b w-full p-4">
+        <!-- ──────── Left: Wheel ──────── -->
+        <div
+          class="left-container transition-layout flex w-full md:w-1/2 justify-center items-center relative">
+          <div class="flex-shrink-0 relative flex items-center justify-center">
+            <div class="wheel-container">
+              <canvas id="wheel-canvas" width="650" height="650"></canvas>
+              <button
+                id="spin-btn"
+                class="absolute inset-0 m-auto w-24 h-24 bg-white rounded-full border-8 border-gray-200 text-gray-800 font-bold text-xl shadow-2xl animate-pulse-zoom flex items-center justify-center text-center transition-transform duration-200 disabled:opacity-50 disabled:animate-none">
+                SPIN
+              </button>
+            </div>
+            <div
+              class="absolute left-full top-1/2 -translate-y-1/2 -ml-3 z-10 pointer rotate-180"></div>
+          </div>
+        </div>
+
+        <!-- ──────── Right: Ad Banner ──────── -->
+        <div
+          class="right-container transition-layout flex w-full md:w-1/2 justify-center items-center p-4"
+          id="ad-banner">
+          <div class="w-[500px]">
+            <div
+              id="ad-image-container"
+              class="w-full h-[500px] flex items-center justify-center">
+              <!-- Ad images will be injected here -->
+            </div>
+            <div id="carousel-dots" class="carousel-dots"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prize Modal -->
+    <div
+      id="prize-modal"
+      class="fixed inset-0 bg-black/80 flex items-center justify-center z-[110] hidden">
+      <div
+        class="bg-white rounded-3xl p-10 text-center max-w-md w-full mx-4 shadow-2xl transform scale-95 opacity-0 transition-all">
+        <h2 class="text-xl font-bold text-gray-400 uppercase tracking-widest">
+          Congratulations!
+        </h2>
+        <p id="prize-result" class="text-4xl font-black text-red-600 my-8"></p>
+        <button
+          id="close-prize-modal"
+          class="w-full bg-red-600 text-white font-bold py-4 rounded-2xl shadow-lg">
+          AWESOME!
+        </button>
+      </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div
+      id="settings-modal"
+      class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[120] hidden">
+      <div
+        class="bg-gray-200 rounded-2xl shadow-2xl p-4 md:p-6 w-full max-w-5xl mx-4 transform transition-all scale-95 opacity-0 h-[550px] flex flex-col md:flex-row overflow-hidden">
+        <!-- Tabs Sidebar -->
+        <nav
+          id="settings-tabs"
+          class="flex md:flex-col w-full m-4 md:w-1/4 space-x-4 md:space-x-0 md:space-y-2 overflow-x-auto md:overflow-visible flex-shrink-0 mb-4 md:mb-0 pr-2 md:pr-0">
+          <h2 class="text-2xl font-bold text-gray-800">Configuration</h2>
+          <button
+            data-tab="prizes"
+            class="tab-btn text-left px-4 py-3 bg-blue-100 text-blue-700 rounded-lg font-semibold">
+            🎁 Prizes
+          </button>
+          <button
+            data-tab="appearance"
+            class="tab-btn text-left px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+            🎨 Appearance
+          </button>
+          <button
+            data-tab="background"
+            class="tab-btn text-left px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+            🌄 Background
+          </button>
+          <button
+            data-tab="prize-banner"
+            class="tab-btn text-left px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+            🏆 Prize Banner
+          </button>
+          <button
+            data-tab="ad-banner"
+            class="tab-btn text-left px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+            📢 Banner
+          </button>
+          <button
+            data-tab="system"
+            class="tab-btn text-left px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg">
+            ⚙️ System
+          </button>
+        </nav>
+
+        <!-- Right Content Area -->
+        <div
+          class="flex-1 overflow-y-auto pl-0 md:pl-6 p-4 bg-white rounded-xl">
+          <div
+            class="flex justify-end items-center mb-4 sticky top-0 bg-white z-10">
+            <button
+              id="close-settings-modal"
+              class="text-gray-500 hover:text-gray-800 text-3xl">
+              &times;
+            </button>
+          </div>
+
+          <div id="tab-content" class="space-y-10">
+            <!-- Prizes Tab -->
+            <div id="prizes-tab" class="tab-pane">
+              <h3 class="font-semibold text-lg mb-4">
+                Manage Prizes (<span id="role-label"></span>)
+              </h3>
+              <div
+                id="prize-list"
+                class="space-y-3 mb-4 max-h-64 overflow-y-auto pr-2"></div>
+              <div class="mt-4 border-t pt-4 space-y-2">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
+                  <input
+                    type="text"
+                    id="new-prize-name-input"
+                    placeholder="Name"
+                    class="p-2 border rounded-lg" />
+                  <input
+                    type="number"
+                    id="new-prize-percent-input"
+                    placeholder="Win %"
+                    class="p-2 border rounded-lg" />
+                  <button
+                    id="add-prize-btn"
+                    class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Appearance Tab -->
+            <div id="appearance-tab" class="tab-pane hidden">
+              <h3 class="font-semibold text-lg mb-4">Colors</h3>
+              <div class="flex gap-4 mb-8">
+                <div>
+                  <label class="text-sm">Primary</label
+                  ><input type="color" id="color1" class="block w-12 h-12" />
+                </div>
+                <div>
+                  <label class="text-sm">Secondary</label
+                  ><input type="color" id="color2" class="block w-12 h-12" />
+                </div>
+              </div>
+              <h3 class="font-semibold text-lg mb-4">Manage Logos</h3>
+              <div
+                id="logo-list"
+                class="space-y-2 max-h-40 overflow-y-auto border rounded-lg p-2 mb-4"></div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <input
+                  type="text"
+                  id="new-logo-name-input"
+                  placeholder="Logo Name"
+                  class="p-2 border rounded-lg" />
+                <input
+                  type="text"
+                  id="new-logo-url-input"
+                  placeholder="Logo URL"
+                  class="p-2 border rounded-lg" />
+                <button
+                  id="add-logo-btn"
+                  class="bg-blue-600 text-white font-bold py-2 rounded-lg">
+                  Add
+                </button>
+              </div>
+            </div>
+
+            <!-- Background Tab -->
+            <div id="background-tab" class="tab-pane hidden">
+              <h3 class="font-semibold text-lg mb-4">Page Background</h3>
+              <div class="flex gap-2">
+                <input
+                  type="text"
+                  id="bg-image-url"
+                  class="flex-grow p-2 border rounded-lg" /><button
+                  id="set-bg-btn"
+                  class="bg-blue-600 text-white px-4 rounded-lg">
+                  Set
+                </button>
+              </div>
+              <div id="bg-image-preview" class="mt-4">
+                <img
+                  id="bg-image-preview-img"
+                  class="w-full h-48 object-cover rounded-lg shadow border" />
+              </div>
+              <button id="remove-bg-btn" class="mt-2 text-red-500 underline">
+                Remove Background
+              </button>
+            </div>
+
+            <!-- Prize Banner Tab -->
+            <div id="prize-banner-tab" class="tab-pane hidden">
+              <h3 class="font-semibold text-lg mb-4">Prize Won Banner</h3>
+              <div class="flex gap-2">
+                <input
+                  type="text"
+                  id="prize-banner-image-url"
+                  class="flex-grow p-2 border rounded-lg" /><button
+                  id="set-prize-banner-btn"
+                  class="bg-blue-600 text-white px-4 rounded-lg">
+                  Set
+                </button>
+              </div>
+              <div id="prize-banner-image-preview" class="mt-4">
+                <img
+                  id="prize-banner-preview-img"
+                  class="w-full h-48 object-cover rounded-lg shadow border" />
+              </div>
+            </div>
+
+            <!-- Ad Banner Tab -->
+            <div id="ad-banner-tab" class="tab-pane hidden">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-lg">Banner Carousel</h3>
+                <div class="flex items-center gap-2">
+                  <input
+                    type="number"
+                    id="ad-flip-interval"
+                    value="5"
+                    class="w-16 p-1 border rounded text-center" />
+                  s
+                  <button
+                    id="save-ad-settings-btn"
+                    class="bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                    Save
+                  </button>
+                </div>
+              </div>
+              <div
+                id="ad-list"
+                class="space-y-3 mb-4 max-h-64 overflow-y-auto"></div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <input
+                  type="text"
+                  id="new-ad-name-input"
+                  placeholder="Name"
+                  class="p-2 border rounded-lg" />
+                <input
+                  type="text"
+                  id="new-ad-url-input"
+                  placeholder="URL"
+                  class="p-2 border rounded-lg" />
+                <button
+                  id="add-ad-btn"
+                  class="bg-blue-600 text-white py-2 rounded-lg">
+                  Add
+                </button>
+              </div>
+            </div>
+
+            <!-- System Tab -->
+            <div id="system-tab" class="tab-pane hidden">
+              <h3 class="font-semibold text-lg mb-4">Automation</h3>
+              <label class="block text-sm mb-2"
+                >Auto-Back to Options (Seconds):</label
+              >
+              <input
+                type="number"
+                id="idle-timeout-input"
+                value="60"
+                class="w-24 p-2 border rounded-lg shadow-sm" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        let allData = null,
+          prizes = [],
+          colors = [],
+          logos = [],
+          adBannerUrls = [],
+          currentAdIndex = 0;
+        let spinAngle = 0,
+          isSpinning = false,
+          idleTimer,
+          idleLimit = 60000,
+          selectedLogoIndex = 0,
+          backgroundUrl = "",
+          currentRole = "";
+        const canvas = document.getElementById("wheel-canvas"),
+          ctx = canvas.getContext("2d");
+
+        fetch("./Preload/preload.json")
+          .then((res) => res.json())
+          .then((data) => {
+            allData = data;
+            backgroundUrl = data.backgroundUrl || "";
+            applyBackgroundImage();
+          })
+          .catch((e) => console.log("Preload JSON not found."));
+
+        const initApp = (role) => {
+          currentRole = role;
+          prizes =
+            allData && allData[role]
+              ? allData[role].prizes
+              : [
+                  { name: "Sample 1", percentage: 50 },
+                  { name: "Sample 2", percentage: 50 },
+                ];
+          colors =
+            allData && allData.colors ? allData.colors : ["#9A0C26", "#FAFAFA"];
+          logos = allData && allData.logo ? allData.logo : [];
+          adBannerUrls =
+            allData && allData[role] && allData[role].ads
+              ? allData[role].ads
+              : allData && allData.ads
+                ? allData.ads
+                : [];
+
+          document
+            .getElementById("role-selection-overlay")
+            .classList.add("opacity-0", "pointer-events-none");
+          document.getElementById("app-container").classList.remove("hidden");
+          document.getElementById("role-label").textContent =
+            role === "student" ? "Student" : "SME/Business";
+
+          startAdCarousel();
+          updateAdImage();
+          updateLogoList();
+          updateSelectedLogo();
+          setTimeout(() => {
+            drawWheel();
+            updatePrizeList();
+            resetIdleTimer();
+          }, 100);
+        };
+
+        const backToSelection = () => {
+          clearInterval(window.adCarouselId);
+          clearTimeout(idleTimer);
+          document.getElementById("app-container").classList.add("hidden");
+          document
+            .getElementById("role-selection-overlay")
+            .classList.remove("opacity-0", "pointer-events-none");
+        };
+
+        const resetIdleTimer = () => {
+          clearTimeout(idleTimer);
+          if (!isSpinning) idleTimer = setTimeout(backToSelection, idleLimit);
+        };
+
+        const getContrastColor = (hex) => {
+          if (hex.startsWith("#")) hex = hex.slice(1);
+          const r = parseInt(hex.substr(0, 2), 16),
+            g = parseInt(hex.substr(2, 2), 16),
+            b = parseInt(hex.substr(4, 2), 16);
+          return (r * 299 + g * 587 + b * 114) / 1000 >= 128
+            ? "#000000"
+            : "#FFFFFF";
+        };
+
+        const drawWheel = () => {
+          if (prizes.length === 0) return;
+          const radius = canvas.width / 2;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.save();
+          ctx.translate(radius, radius);
+          ctx.rotate(spinAngle);
+          let curAngle = 0;
+
+          const totalWeight = prizes.reduce((s, p) => s + p.percentage, 0);
+
+          prizes.forEach((p, i) => {
+            const arc = (p.percentage / totalWeight) * (Math.PI * 2);
+            ctx.beginPath();
+            ctx.fillStyle = colors[i % colors.length];
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, radius - 5, curAngle, curAngle + arc);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.save();
+            ctx.rotate(curAngle + arc / 2);
+            ctx.fillStyle = getContrastColor(colors[i % colors.length]);
+            ctx.font = "bold 16px Poppins";
+            ctx.textAlign = "right";
+            ctx.textBaseline = "middle";
+            const padding = 20;
+            ctx.fillText(p.name, radius - padding, 0);
+            ctx.restore();
+            curAngle += arc;
+          });
+
+          ctx.restore();
+        };
+
+        const spin = () => {
+          if (isSpinning || prizes.length === 0) return;
+          isSpinning = true;
+          
+          const spinBtn = document.getElementById("spin-btn");
+          const backBtn = document.getElementById("back-to-selection");
+          const settingsBtn = document.getElementById("open-settings-btn");
+
+          spinBtn.disabled = true;
+          backBtn.disabled = true;
+          backBtn.classList.add("opacity-50", "pointer-events-none");
+          settingsBtn.classList.add("opacity-50", "pointer-events-none");
+
+          document.querySelector(".right-container").classList.add("ad-hidden");
+          document.querySelector(".left-container").classList.add("wheel-full");
+
+          // 1. Pick winner first based on weighted logic
+          const totalWeight = prizes.reduce((s, p) => s + p.percentage, 0);
+          const rand = Math.random() * totalWeight;
+          let cumulative = 0;
+          let winnerIndex = 0;
+          for (let i = 0; i < prizes.length; i++) {
+            cumulative += prizes[i].percentage;
+            if (rand <= cumulative) {
+              winnerIndex = i;
+              break;
+            }
+          }
+          const winner = prizes[winnerIndex];
+
+          // 2. Calculate target angle to land on winner
+          // We want the pointer (at 0 rad) to land within the slice [S_w, E_w]
+          let startArc = 0;
+          for (let i = 0; i < winnerIndex; i++) {
+            startArc += (prizes[i].percentage / totalWeight) * (Math.PI * 2);
+          }
+          const endArc =
+            startArc + (winner.percentage / totalWeight) * (Math.PI * 2);
+          
+          // Pick a random spot inside the winner's slice (with 10% padding from edges)
+          const padding = (endArc - startArc) * 0.1;
+          const targetSliceAngle = startArc + padding + Math.random() * (endArc - startArc - 2 * padding);
+          
+          // The wheel rotation needed to bring targetSliceAngle to the pointer position (0 rad)
+          // norm = (2pi - (finalAngle % 2pi)) % 2pi
+          // targetSliceAngle = (2pi - (finalAngle % 2pi)) % 2pi
+          // So (finalAngle % 2pi) = 2pi - targetSliceAngle
+          
+          const extraSpins = 10 * Math.PI * 2;
+          const finalRotation = (Math.PI * 2 - targetSliceAngle);
+          const currentRotation = spinAngle % (Math.PI * 2);
+          
+          // Calculate how much we need to add to reach finalRotation smoothly
+          let rotationToAdd = (finalRotation - currentRotation + Math.PI * 2) % (Math.PI * 2);
+          if (rotationToAdd < 0.001) rotationToAdd = Math.PI * 2; // Ensure at least a tiny bit of rotation if already at target
+          
+          const startA = spinAngle;
+          const targetA = startA + extraSpins + rotationToAdd;
+
+          const duration = 8000;
+          const startT = performance.now();
+
+          function animate(now) {
+            const t = Math.min((now - startT) / duration, 1);
+            // Ease out cubic
+            const ease = 1 - Math.pow(1 - t, 4);
+            spinAngle = startA + (targetA - startA) * ease;
+            drawWheel();
+
+            if (t < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              isSpinning = false;
+              
+              const spinBtn = document.getElementById("spin-btn");
+              const backBtn = document.getElementById("back-to-selection");
+              const settingsBtn = document.getElementById("open-settings-btn");
+
+              spinBtn.disabled = false;
+              backBtn.disabled = false;
+              backBtn.classList.remove("opacity-50", "pointer-events-none");
+              settingsBtn.classList.remove("opacity-50", "pointer-events-none");
+              
+              document.getElementById("prize-result").textContent = winner.name;
+              const m = document.getElementById("prize-modal");
+              m.classList.remove("hidden");
+              setTimeout(
+                () =>
+                  m
+                    .querySelector("div")
+                    .classList.remove("scale-95", "opacity-0"),
+                10,
+              );
+              confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 } });
+            }
+          }
+          requestAnimationFrame(animate);
+        };
+
+        const updatePrizeList = () => {
+          document.getElementById("prize-list").innerHTML = prizes
+            .map(
+              (p, i) => `
+            <div class="p-2 bg-gray-50 rounded flex justify-between items-center border">
+                <span class="text-sm font-medium">${p.name}</span>
+                <div class="flex items-center gap-2">
+                  <input type="number" value="${p.percentage}" 
+                    onchange="updatePrizePercentage(${i}, this.value)"
+                    class="w-16 p-1 border rounded text-center text-sm" />
+                  <span class="text-xs text-gray-500">%</span>
+                  <button onclick="removePrize(${i})" class="text-red-500 font-bold px-2 hover:bg-red-50 rounded transition-colors">&times;</button>
+                </div>
+            </div>
+        `,
+            )
+            .join("");
+          drawWheel();
+        };
+
+        window.updatePrizePercentage = (i, val) => {
+          const newPerc = parseFloat(val);
+          if (!isNaN(newPerc) && newPerc >= 0) {
+            prizes[i].percentage = newPerc;
+            drawWheel();
+          }
+        };
+
+        window.removePrize = (i) => {
+          prizes.splice(i, 1);
+          updatePrizeList();
+        };
+
+        const updateLogoList = () => {
+          document.getElementById("logo-list").innerHTML = logos
+            .map(
+              (l, i) => `
+            <label class="flex items-center gap-2 p-1 hover:bg-gray-100 rounded">
+                <input type="radio" name="logo" ${i === selectedLogoIndex ? "checked" : ""} onchange="selectLogo(${i})">
+                <img src="${l.url}" class="h-8 w-8 object-contain"> ${l.name}
+            </label>
+        `,
+            )
+            .join("");
+        };
+        window.selectLogo = (i) => {
+          selectedLogoIndex = i;
+          updateSelectedLogo();
+        };
+        const updateSelectedLogo = () => {};
+
+        const updateAdList = () => {
+          document.getElementById("ad-list").innerHTML = adBannerUrls
+            .map(
+              (ad, i) => `
+            <div class="p-2 border flex items-center gap-2 rounded">
+                <img src="${ad.url}" class="w-8 h-8 object-cover rounded"> <span>${ad.name}</span>
+                <button onclick="removeAd(${i})" class="ml-auto text-red-500 font-bold">X</button>
+            </div>
+        `,
+            )
+            .join("");
+        };
+        window.removeAd = (i) => {
+          adBannerUrls.splice(i, 1);
+          updateAdList();
+        };
+
+        const updateCarouselDots = () => {
+          const dotsEl = document.getElementById("carousel-dots");
+          dotsEl.innerHTML = adBannerUrls
+            .map(
+              (_, i) =>
+                `<span class="carousel-dot ${i === currentAdIndex ? "active" : ""}" onclick="window.goToSlide(${i})"></span>`,
+            )
+            .join("");
+        };
+
+        window.goToSlide = (i) => {
+          currentAdIndex = i;
+          updateAdImage();
+        };
+
+        const startAdCarousel = () => {
+          clearInterval(window.adCarouselId);
+          currentAdIndex = 0;
+          window.adCarouselId = setInterval(() => {
+            if (adBannerUrls.length) {
+              currentAdIndex = (currentAdIndex + 1) % adBannerUrls.length;
+              updateAdImage();
+            }
+          }, 4000);
+        };
+
+        const updateAdImage = () => {
+          const container = document.getElementById("ad-image-container");
+          if (adBannerUrls.length) {
+            // Check if we need to rebuild the images (if count changed or it's the first run)
+            const existingImgs = container.querySelectorAll("img");
+            if (existingImgs.length !== adBannerUrls.length) {
+              container.innerHTML = adBannerUrls
+                .map(
+                  (ad, i) => `
+                <img src="${ad.url}" 
+                     alt="Banner ${i + 1}" 
+                     class="absolute inset-0 w-full h-full object-cover rounded-xl transition-opacity duration-1000 ease-in-out opacity-0">
+              `,
+                )
+                .join("");
+            }
+
+            // Update opacities for cross-fade
+            const imgs = container.querySelectorAll("img");
+            imgs.forEach((img, i) => {
+              if (i === currentAdIndex) {
+                img.classList.remove("opacity-0");
+                img.classList.add("opacity-100");
+              } else {
+                img.classList.remove("opacity-100");
+                img.classList.add("opacity-0");
+              }
+            });
+            updateCarouselDots();
+          } else {
+            container.innerHTML = `<div class="w-full h-full bg-gray-800/50 rounded-[1.5rem] flex items-center justify-center text-gray-500 italic">No Banner Added</div>`;
+            document.getElementById("carousel-dots").innerHTML = "";
+          }
+        };
+
+        const applyBackgroundImage = () => {
+          if (backgroundUrl)
+            document.body.style.backgroundImage = `url('${backgroundUrl}')`;
+        };
+
+        // Listeners
+        document.getElementById("select-student").onclick = () =>
+          initApp("student");
+        document.getElementById("select-enterprise").onclick = () =>
+          initApp("enterprise");
+        document.getElementById("back-to-selection").onclick = backToSelection;
+        document.getElementById("spin-btn").onclick = spin;
+
+        document.getElementById("add-prize-btn").onclick = () => {
+          const n = document.getElementById("new-prize-name-input").value,
+            p = parseFloat(
+              document.getElementById("new-prize-percent-input").value,
+            );
+          if (n && p) {
+            prizes.push({ name: n, percentage: p });
+            updatePrizeList();
+          }
+        };
+        document.getElementById("add-logo-btn").onclick = () => {
+          const n = document.getElementById("new-logo-name-input").value,
+            u = document.getElementById("new-logo-url-input").value;
+          if (n && u) {
+            logos.push({ name: n, url: u });
+            updateLogoList();
+          }
+        };
+
+        document.getElementById("set-bg-btn").onclick = () => {
+          backgroundUrl = document.getElementById("bg-image-url").value;
+          applyBackgroundImage();
+        };
+        document.getElementById("remove-bg-btn").onclick = () => {
+          backgroundUrl = "";
+          document.getElementById("bg-image-url").value = "";
+          applyBackgroundImage();
+        };
+
+        document.getElementById("open-settings-btn").onclick = () => {
+          document.getElementById("settings-modal").classList.remove("hidden");
+          setTimeout(
+            () =>
+              document
+                .getElementById("settings-modal")
+                .querySelector("div")
+                .classList.remove("scale-95", "opacity-0"),
+            10,
+          );
+        };
+        document.getElementById("close-settings-modal").onclick = () =>
+          document.getElementById("settings-modal").classList.add("hidden");
+
+        document.getElementById("close-prize-modal").onclick = () => {
+          document.getElementById("prize-modal").classList.add("hidden");
+          document
+            .querySelector(".right-container")
+            .classList.remove("ad-hidden");
+          document
+            .querySelector(".left-container")
+            .classList.remove("wheel-full");
+        };
+
+        document.getElementById("idle-timeout-input").onchange = (e) =>
+          (idleLimit = parseInt(e.target.value) * 1000);
+        ["mousedown", "mousemove", "keypress", "touchstart"].forEach((e) =>
+          window.addEventListener(e, resetIdleTimer, true),
+        );
+
+        // Tab Switching Logic
+        const tabNav = document.getElementById("settings-tabs");
+        tabNav.addEventListener("click", (e) => {
+          if (e.target.classList.contains("tab-btn")) {
+            const targetTab = e.target.dataset.tab;
+            tabNav.querySelectorAll(".tab-btn").forEach((btn) => {
+              btn.classList.remove("bg-blue-100", "text-blue-700");
+              btn.classList.add("text-gray-600");
+            });
+            e.target.classList.add("bg-blue-100", "text-blue-700");
+            document
+              .querySelectorAll(".tab-pane")
+              .forEach((pane) => pane.classList.add("hidden"));
+            document
+              .getElementById(`${targetTab}-tab`)
+              .classList.remove("hidden");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
