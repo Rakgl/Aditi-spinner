@@ -28,6 +28,10 @@
         backdrop-filter: blur(12px);
         z-index: 100;
       }
+      #app-container {
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(2px);
+      }
       .glass-card {
         background: rgba(255, 255, 255, 0.03);
         backdrop-filter: blur(15px);
@@ -406,10 +410,10 @@
         <div
           class="right-container transition-layout flex w-full md:w-1/2 justify-center items-center p-4"
           id="ad-banner">
-          <div class="w-[500px]">
+          <div class="w-[650px]">
             <div
               id="ad-image-container"
-              class="w-full h-[500px] flex items-center justify-center">
+              class="w-full h-[650px] flex items-center justify-center">
               <!-- Ad images will be injected here -->
             </div>
             <div id="carousel-dots" class="carousel-dots"></div>
@@ -783,7 +787,7 @@
         const spin = () => {
           if (isSpinning || prizes.length === 0) return;
           isSpinning = true;
-          
+
           const spinBtn = document.getElementById("spin-btn");
           const backBtn = document.getElementById("back-to-selection");
           const settingsBtn = document.getElementById("open-settings-btn");
@@ -818,24 +822,28 @@
           }
           const endArc =
             startArc + (winner.percentage / totalWeight) * (Math.PI * 2);
-          
+
           // Pick a random spot inside the winner's slice (with 10% padding from edges)
           const padding = (endArc - startArc) * 0.1;
-          const targetSliceAngle = startArc + padding + Math.random() * (endArc - startArc - 2 * padding);
-          
+          const targetSliceAngle =
+            startArc +
+            padding +
+            Math.random() * (endArc - startArc - 2 * padding);
+
           // The wheel rotation needed to bring targetSliceAngle to the pointer position (0 rad)
           // norm = (2pi - (finalAngle % 2pi)) % 2pi
           // targetSliceAngle = (2pi - (finalAngle % 2pi)) % 2pi
           // So (finalAngle % 2pi) = 2pi - targetSliceAngle
-          
+
           const extraSpins = 10 * Math.PI * 2;
-          const finalRotation = (Math.PI * 2 - targetSliceAngle);
+          const finalRotation = Math.PI * 2 - targetSliceAngle;
           const currentRotation = spinAngle % (Math.PI * 2);
-          
+
           // Calculate how much we need to add to reach finalRotation smoothly
-          let rotationToAdd = (finalRotation - currentRotation + Math.PI * 2) % (Math.PI * 2);
+          let rotationToAdd =
+            (finalRotation - currentRotation + Math.PI * 2) % (Math.PI * 2);
           if (rotationToAdd < 0.001) rotationToAdd = Math.PI * 2; // Ensure at least a tiny bit of rotation if already at target
-          
+
           const startA = spinAngle;
           const targetA = startA + extraSpins + rotationToAdd;
 
@@ -853,7 +861,7 @@
               requestAnimationFrame(animate);
             } else {
               isSpinning = false;
-              
+
               const spinBtn = document.getElementById("spin-btn");
               const backBtn = document.getElementById("back-to-selection");
               const settingsBtn = document.getElementById("open-settings-btn");
@@ -862,7 +870,7 @@
               backBtn.disabled = false;
               backBtn.classList.remove("opacity-50", "pointer-events-none");
               settingsBtn.classList.remove("opacity-50", "pointer-events-none");
-              
+
               document.getElementById("prize-result").textContent = winner.name;
               const m = document.getElementById("prize-modal");
               m.classList.remove("hidden");

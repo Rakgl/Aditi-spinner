@@ -3,19 +3,20 @@
     "prizes": [
       { "name": "🎫 Voucher 5%", "image": "", "percentage": 20 },
       { "name": "🎫 Voucher 10%", "image": "", "percentage": 10 },
+      { "name": "✨ Stickers", "image": "", "percentage": 25 },
       { "name": "🎫 Voucher 15%", "image": "", "percentage": 5 },
       { "name": "🛍️ ADITI Tote Bag", "image": "", "percentage": 10 },
-      { "name": "🍼 ADITI Bottle", "image": "", "percentage": 8 },
-      { "name": "✨ Stickers", "image": "", "percentage": 25 },
       { "name": "🌟 You are amazing!", "image": "", "percentage": 11 },
+      { "name": "🍼 ADITI Bottle", "image": "", "percentage": 8 },
       { "name": "🙏 Thank you for visiting", "image": "", "percentage": 11 }
     ],
     "ads": [
-      { "name": "SME 1", "url": "Images/sme/IMG_2081.HEIC" },
-      { "name": "SME 2", "url": "Images/sme/IMG_2313 - Copy.HEIC" },
-      { "name": "SME 3", "url": "Images/sme/IMG_2778 - Copy.HEIC" },
-      { "name": "SME 4", "url": "Images/sme/IMG_2783.HEIC" },
-      { "name": "SME 5", "url": "Images/sme/IMG_9444.HEIC" }
+      { "name": "SME 1", "url": "Images/sme/IMG_3899.JPG" },
+      { "name": "SME 2", "url": "Images/sme/IMG_3923 - Copy.JPG" },
+      { "name": "SME 3", "url": "Images/sme/_DSC2434.jpg" },
+      { "name": "SME 4", "url": "Images/sme/_DSC2484.jpg" },
+      { "name": "SME 5", "url": "Images/sme/_DSC2610.jpg" },
+      { "name": "SME 6", "url": "Images/sme/photo_2023-12-07_15-39-52.jpg" }
     ]
   },
   "student": {
@@ -25,25 +26,20 @@
       { "name": "🎓 Scholarship 50%", "image": "", "percentage": 6 },
       { "name": "👑 Scholarship 100%", "image": "", "percentage": 1 },
       { "name": "🛍️ ADITI Tote Bag", "image": "", "percentage": 10 },
-      { "name": "🍼 ADITI Bottle", "image": "", "percentage": 8 },
       { "name": "✨ Stickers", "image": "", "percentage": 30 },
       { "name": "🌟 You are amazing!", "image": "", "percentage": 12 },
+      { "name": "🍼 ADITI Bottle", "image": "", "percentage": 8 },
       { "name": "🙏 Thank you for visiting", "image": "", "percentage": 10 }
     ],
     "ads": [
-      { "name": "Student 1", "url": "Images/student/IMG_3899.JPG" },
-      { "name": "Student 2", "url": "Images/student/IMG_3923 - Copy.JPG" },
-      { "name": "Student 3", "url": "Images/student/_DSC2434.jpg" },
-      { "name": "Student 4", "url": "Images/student/_DSC2484.jpg" },
-      { "name": "Student 5", "url": "Images/student/_DSC2610.jpg" },
-      {
-        "name": "Student 6",
-        "url": "Images/student/photo_2023-12-07_15-39-52.jpg"
-      }
+      { "name": "Student 1", "url": "Images/student/DSC01719.jpg" },
+      { "name": "Student 2", "url": "Images/student/iOS 1.jpg" },
+      { "name": "Student 3", "url": "Images/student/iOS 10.jpg" },
+      { "name": "Student 4", "url": "Images/student/IT 10.jpg" }
     ]
   },
   "colors": ["#9A0C26", "#FAFAFA"],
-  "backgroundUrl": "https://i.ibb.co/VprFLDMF/image.png",
+  "backgroundUrl": "Images/iOS 1.jpg",
   "prizeBannerUrl": "",
   "ads": [
     {
